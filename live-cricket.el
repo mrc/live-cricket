@@ -67,21 +67,33 @@
          (end (- (search-forward end-string) (length end-string))))
     (buffer-substring start end)))
 
+(defconst live-cricket-title-regex
+  "\\(.+\\) \\([[:digit:]]+\\)/?\\([[:digit:]]+\\)? (\\([[:digit:]]+\\)\\.\\([[:digit:]]+\\) ov\\(?:, \\([^,]+\\) \\([[:digit:]]+\\)\\(\\*\\)\\)\\(?:, \\([^,]+\\) \\([[:digit:]]+\\)\\(\\*\\)\\)?, \\([^)]+\\) \\([[:digit:]]+\\)/\\([[:digit:]]+\\))"
+  "Regular expression to locate ane extract attributes of the
+cricket match. The match groups line up with
+`live-cricket-title-fields'.")
+
+(defconst live-cricket-title-fields
+  '(team runs wickets overs in-over
+         bats1 bats1-runs bats1-no
+         bats2 bats2-runs bats2-no
+         bowler bowler-wickets bowler-runs)
+  "Fields for the match groups in `live-cricket-title-regex'.")
+
 (defun live-cricket-parse-title (title)
   "Parse the score from the title. This is in a format which
 starts like: ``AusWn 102/3 (18.3 ov, AJ Blackwell 10*, EJ Villani
-36*, CM Edwards 0/10)''."
+36*, CM Edwards 0/10)''.
+
+The result is an alist of attributes of the cricket match, with
+the keys from `live-cricket-title-fields'."
   (message "parsing [%S]" title)
   (cl-labels ((m (n) (match-string-no-properties n title))
               (c (s n) (cons s (m n)))
               (fields (syms) (cl-mapcar #'c syms (number-sequence 1 100))))
     (cond
-     ((string-match "\\(.+\\) \\([[:digit:]]+\\)/?\\([[:digit:]]+\\)? (\\([[:digit:]]+\\)\\.\\([[:digit:]]+\\) ov\\(?:, \\([^,]+\\) \\([[:digit:]]+\\)\\(\\*\\)\\)\\(?:, \\([^,]+\\) \\([[:digit:]]+\\)\\(\\*\\)\\)?, \\([^)]+\\) \\([[:digit:]]+\\)/\\([[:digit:]]+\\))" title)
-      (fields
-       '(team runs wickets overs in-over
-              bats1 bats1-runs bats1-no
-              bats2 bats2-runs bats2-no
-              bowler bowler-wickets bowler-runs))))))
+     ((string-match live-cricket-title-regex title)
+      (fields live-cricket-title-fields)))))
 
 (defun live-cricket-fetch-match-score (url)
   "Returns a deferred object which contains the result of the
