@@ -4,7 +4,7 @@
 
 ;; Author: Matt Curtis <matt.r.curtis@gmail.com>
 ;; Version: 0.1
-;; Package-Requires ((deferred 0.3.2))
+;; Package-Requires ((deferred 0.3.2) (request-deferred 0.2.0))
 ;; Keywords: sport
 ;; URL: https://github.com/mrc/live-cricket
 
