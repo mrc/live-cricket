@@ -18,7 +18,10 @@ Example
 returns an alist like:
 
 ```elisp
-  ((team . "Ind") (runs . "313") (wickets . "7") (overs . "93") (in-over . "0") (bats1 . "AT Rayudu") (bats1-runs . "49") (bats1-no . "*") (bats2 . "B Kumar") (bats2-runs . "3") (bats2-no . "*") (bowler . "SET Friday") (bowler-wickets . "0") (bowler-runs . "86"))
+((team . "Ind") (runs . "313") (wickets . "7") (overs . "93") (in-over . "0")
+ (bats1 . "AT Rayudu") (bats1-runs . "49") (bats1-no . "*")
+ (bats2 . "B Kumar") (bats2-runs . "3") (bats2-no . "*")
+ (bowler . "SET Friday") (bowler-wickets . "0") (bowler-runs . "86"))
 ```
 
 Titles used for testing:
