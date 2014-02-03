@@ -9,40 +9,40 @@
 ;; URL: https://github.com/mrc/live-cricket
 
 ;; This file is not part of GNU Emacs.
-
+;;
 ;; This program is free software; you can redistribute it and/or
 ;; modify it under the terms of the GNU General Public License as
 ;; published by the Free Software Foundation, either version 3 of the
 ;; License, or (at your option) any later version.
-
+;;
 ;; This program is distributed in the hope that it will be useful, but
 ;; WITHOUT ANY WARRANTY; without even the implied warranty of
 ;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 ;; General Public License for more details.
-
+;;
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see
 ;; <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-
+;;
 ;; Asynchronously retrieve the cricket score from the web. Returns a
 ;; deferred object, which can be used in a chain for further
 ;; processing, or you can block until there's a result with
 ;; (deferred:sync!)
-
+;;
 ;;; Sample:
-
+;;
 ;; (deferred:sync!
-;;   (fetch-match-score
+;;   (live-cricket-fetch-match-score
 ;;    "http://www.espncricinfo.com/new-zealand-v-india-2014/engine/current/match/667639.html"))
-
+;;
 ;; returns an alist like:
-
+;;
 ;; ((team . "Ind") (runs . "313") (wickets . "7") (overs . "93") (in-over . "0") (bats1 . "AT Rayudu") (bats1-runs . "49") (bats1-no . "*") (bats2 . "B Kumar") (bats2-runs . "3") (bats2-no . "*") (bowler . "SET Friday") (bowler-wickets . "0") (bowler-runs . "86"))
-
+;;
 ;; Titles used for testing:
-
+;;
 ;; "Eng 25/3 (5.0 ov, JE Root 1*, GJ Maxwell 1/6) | Live Scorecard | ESPN Cricinfo"
 ;; "Eng 75/4 (11.0 ov, JC Buttler 6*, EJG Morgan 31*, GJ Maxwell 2/31) | Live Scorecard | ESPN Cricinfo"
 ;; "Eng 100/8 (15.1 ov, CJ Jordan 0*, SCJ Broad 2*, NM Coulter-Nile 2/17) | Live Scorecard | ESPN Cricinfo"
@@ -58,7 +58,7 @@
 (require 'deferred)
 (require 'request-deferred)
 
-(defun extract-title ()
+(defun live-cricket-extract-title ()
   "Extract the HTML title from the buffer."
   (goto-char (point-min))
   (let* ((start-string "<title>")
@@ -67,7 +67,7 @@
          (end (- (search-forward end-string) (length end-string))))
     (buffer-substring start end)))
 
-(defun parse-title (title)
+(defun live-cricket-parse-title (title)
   "Parse the score from the title. This is in a format which
 starts like: ``AusWn 102/3 (18.3 ov, AJ Blackwell 10*, EJ Villani
 36*, CM Edwards 0/10)''."
@@ -83,14 +83,14 @@ starts like: ``AusWn 102/3 (18.3 ov, AJ Blackwell 10*, EJ Villani
               bats2 bats2-runs bats2-no
               bowler bowler-wickets bowler-runs))))))
 
-(defun fetch-match-score (url)
+(defun live-cricket-fetch-match-score (url)
   "Returns a deferred object which contains the result of the
 cricket scores, fetched from URL."
   (deferred:$
     (request-deferred url
-                      :parser #'extract-title)
+                      :parser #'live-cricket-extract-title)
     (deferred:nextc it #'request-response-data)
-    (deferred:nextc it #'parse-title)))
+    (deferred:nextc it #'live-cricket-parse-title)))
 
 (provide 'live-cricket)
 
