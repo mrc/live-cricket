@@ -6,6 +6,9 @@ deferred object, which can be used in a chain for further
 processing, or you can block until there's a result with
 (deferred:sync!)
 
+For more information about deferred, see
+https://github.com/kiwanami/emacs-deferred
+
 Example
 -------
 
