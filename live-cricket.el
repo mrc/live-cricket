@@ -74,10 +74,11 @@ cricket match. The match groups line up with
 `live-cricket-title-fields'.")
 
 (defconst live-cricket-title-fields
-  '(team runs wickets overs in-over
-         bats1 bats1-runs bats1-no
-         bats2 bats2-runs bats2-no
-         bowler bowler-wickets bowler-runs)
+  '((team) (runs . integer) (wickets . integer)
+    (overs . integer) (in-over . integer)
+    (bats1) (bats1-runs . integer) (bats1-no)
+    (bats2) (bats2-runs . integer) (bats2-no)
+    (bowler) (bowler-wickets . integer) (bowler-runs . integer))
   "Fields for the match groups in `live-cricket-title-regex'.")
 
 (defun live-cricket-parse-title (title)
@@ -93,7 +94,21 @@ the keys from `live-cricket-title-fields'."
               (fields (syms) (cl-mapcar #'c syms (number-sequence 1 100))))
     (cond
      ((string-match live-cricket-title-regex title)
-      (fields live-cricket-title-fields)))))
+      (fields (mapcar #'car live-cricket-title-fields))))))
+
+(defun live-cricket-normalize-match-score (score)
+  (cl-labels ((convert-field (type value)
+                             (pcase type
+                               (`integer (string-to-number value))
+                               (_ value))))
+    (mapcar (lambda (kv)
+              (let* ((key (car kv))
+                     (val (cdr kv))
+                     (type (cl-find key live-cricket-title-fields :key #'car)))
+                (if (and val type (cdr type))
+                    (cons key (convert-field (cdr type) val))
+                  kv)))
+            score)))
 
 (defun live-cricket-fetch-match-score (url)
   "Returns a deferred object which contains the result of the
