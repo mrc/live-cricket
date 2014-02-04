@@ -110,6 +110,39 @@ the keys from `live-cricket-title-fields'."
                   kv)))
             score)))
 
+(defun live-cricket-balls (score)
+  (+ (* 6 (assoc-default 'overs score #'eq 0))
+     (assoc-default 'in-over score #'eq 0)))
+
+(defun live-cricket-run-rate (score)
+  (* 6 (/ (float (assoc-default 'runs score #'eq 0))
+          (live-cricket-balls score))))
+
+(defun live-cricket-remaining-balls (score total-overs)
+  (- (* 6 total-overs) (live-cricket-balls score)))
+
+(defun live-cricket-remaining-runs (score target)
+  (- target (assoc-default 'runs score #'eq 0)))
+
+(defun live-cricket-run-rate-required (score target total-overs)
+  (* 6 (/ (float (live-cricket-remaining-runs score target))
+          (live-cricket-remaining-balls score total-overs))))
+
+(defun live-cricket-format-score (score)
+  (cl-labels ((n (s) (assoc-default s score #'eq 0)))
+    (let ((overs (n 'overs))
+          (in-over (n 'in-over))
+          (runs (n 'runs))
+          (wickets (n 'wickets)))
+      (format "%d.%d %d/%d" overs in-over wickets runs))))
+
+(defun live-cricket-summary (score target total-overs)
+  (cl-labels ((n (s) (assoc-default s score #'eq 0)))
+    (let ((team (n 'team))
+          (rruns (live-cricket-remaining-runs score target))
+          (rballs (live-cricket-remaining-balls score total-overs)))
+      (format "%s require %d runs with %d balls remaining." team rruns rballs))))
+
 (defun live-cricket-fetch-match-score (url)
   "Returns a deferred object which contains the result of the
 cricket scores, fetched from URL."
@@ -118,6 +151,24 @@ cricket scores, fetched from URL."
                       :parser #'live-cricket-extract-title)
     (deferred:nextc it #'request-response-data)
     (deferred:nextc it #'live-cricket-parse-title)))
+
+(defun live-cricket-display-summary ()
+  (interactive)
+  (lexical-let ((url "http://www.espncricinfo.com/big-bash-league-2013/engine/current/match/654095.html")
+                (target (1+ 141))
+                (overs 20))
+    (deferred:$
+      (deferred:next (lambda () (fetch-match-score url)))
+      (deferred:nextc it #'live-cricket-normalize-match-score)
+      (deferred:nextc it
+        (lambda (score)
+          (let ((s (live-cricket-format-score score))
+                (rr (live-cricket-run-rate score)))
+            (if target
+                (let ((rrr (live-cricket-run-rate-required score target overs))
+                      (summary (live-cricket-summary score target overs)))
+                  (message "%s. Run rate: %.2f. Run rate required: %.2f. %s" s rr rrr summary))
+              (message "%s. Run rate: %.2f" s rr))))))))
 
 (provide 'live-cricket)
 
