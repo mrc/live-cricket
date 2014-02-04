@@ -152,6 +152,7 @@ cricket scores, fetched from URL."
     (deferred:nextc it #'request-response-data)
     (deferred:nextc it #'live-cricket-parse-title)))
 
+;;;###autoload
 (defun live-cricket-display-summary ()
   (interactive)
   (lexical-let ((url "http://www.espncricinfo.com/big-bash-league-2013/engine/current/match/654095.html")
